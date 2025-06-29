@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "../index.css";
 import QuadraticCalculator from "./QuadraticCalculator";
+import { FaCalculator, FaInfinity, FaHistory } from 'react-icons/fa';
 
 // Button layout for iPhone calculator
 const buttons = [
@@ -154,9 +155,10 @@ const IphoneCalculator: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 transition-all duration-700">
         <button
-          className="absolute top-6 left-6 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold shadow hover:scale-105 transition-transform z-10"
+          className="absolute top-6 left-6 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold shadow hover:scale-105 transition-transform z-10 flex items-center gap-2"
           onClick={() => setMode('standard')}
         >
+          <FaCalculator className="inline-block text-lg" />
           Standard Calc
         </button>
         <QuadraticCalculator />
@@ -169,9 +171,10 @@ const IphoneCalculator: React.FC = () => {
       <div className="flex flex-col md:flex-row gap-6 w-full max-w-2xl items-center md:items-stretch justify-center">
         <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-xs border border-gray-200/20 mx-auto">
           <button
-            className="mb-4 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold shadow hover:scale-105 transition-transform"
+            className="mb-4 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold shadow hover:scale-105 transition-transform flex items-center gap-2"
             onClick={() => setMode('quadratic')}
           >
+            <FaInfinity className="inline-block text-lg" />
             Quadratic
           </button>
           <div className="text-xs text-gray-400 mb-1 text-right h-4 select-none">
@@ -198,10 +201,20 @@ const IphoneCalculator: React.FC = () => {
         {/* History Sidebar - now responsive */}
         {history.length > 0 && (
           <div className={`flex flex-col w-full max-w-xs md:w-56 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0 transition-all duration-500 ease-out ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 md:translate-x-8'}`}>
-            <div className="text-lg font-bold text-white mb-4">History</div>
+            <div className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <FaHistory className="inline-block text-blue-200" />
+              History
+            </div>
             <ul className="space-y-2">
               {history.map((item, idx) => (
-                <li key={idx} className="text-white/90 text-sm bg-black/30 rounded px-2 py-1">{item}</li>
+                <li key={idx} className="text-white/90 text-sm bg-black/30 rounded px-2 py-1 text-center relative">
+                  {idx === 0 && (
+                    <div className="w-full flex justify-start">
+                      <span className="inline-block mb-1 px-2 py-0.5 bg-blue-500 text-white text-[10px] rounded-full font-semibold shadow">Latest</span>
+                    </div>
+                  )}
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
           </div>
