@@ -177,7 +177,7 @@ const IphoneCalculator: React.FC = () => {
           <div className="text-xs text-gray-400 mb-1 text-right h-4 select-none">
             {process.replace(/([+\-x/=])/g, ' $1 ').replace(/\s+/g, ' ').trim()}
           </div>
-          <div className="text-4xl font-mono font-bold text-right text-white mb-6 h-12 overflow-x-auto transition-all duration-200 bg-black/40 rounded-lg px-3 py-2 shadow-inner">
+          <div className="text-4xl font-mono font-bold text-right text-white mb-6 h-12 transition-all duration-200 bg-black/40 rounded-lg px-3 py-2 shadow-inner">
             {parseFloat(display).toLocaleString("en", { maximumFractionDigits: 8 })}
           </div>
           <div className="grid grid-cols-4 gap-3">
