@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaInfinity, FaCheckCircle, FaInfoCircle, FaHistory } from 'react-icons/fa';
+import { FaCheckCircle, FaInfoCircle, FaHistory } from 'react-icons/fa';
 
 const QuadraticCalculator: React.FC = () => {
   const [coefficients, setCoefficients] = useState({ a: '', b: '', c: '' });
