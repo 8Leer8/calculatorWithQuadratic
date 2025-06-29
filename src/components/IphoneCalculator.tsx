@@ -1,20 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "../index.css";
 import QuadraticCalculator from "./QuadraticCalculator";
-import { FaCalculator, FaInfinity, FaHistory } from 'react-icons/fa';
+import { FaCalculator, FaInfinity, FaHistory, FaBackspace } from 'react-icons/fa';
 
 // Button layout for iPhone calculator
 const buttons = [
-  ["AC", "+/-", "%", "/"],
-  ["7", "8", "9", "x"],
-  ["4", "5", "6", "-"],
-  ["1", "2", "3", "+"],
-  ["0", ".", "="]
+  ["C", "÷", "×", "⌫"],
+  ["7", "8", "9", "-"],
+  ["4", "5", "6", "+"],
+  ["1", "2", "3", "+/-"],
+  ["%", "0", ".", "="]
 ];
 
 const getButtonClass = (btn: string) => {
-  if (["/", "x", "-", "+", "="].includes(btn)) return "op-btn";
-  if (["AC", "+/-", "%"].includes(btn)) return "func-btn";
+  if (["÷", "×", "-", "+", "="].includes(btn)) return "op-btn";
+  if (["C", "+/-", "%", "⌫"].includes(btn)) return "func-btn";
   if (btn === "0") return "zero-btn";
   return "num-btn";
 };
@@ -28,6 +28,13 @@ const IphoneCalculator: React.FC = () => {
   const [justEvaluated, setJustEvaluated] = useState(false);
   const [history, setHistory] = useState<string[]>([]); // Add history state
   const [showHistory, setShowHistory] = useState(false);
+  const mainDisplayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (mainDisplayRef.current) {
+      mainDisplayRef.current.scrollLeft = mainDisplayRef.current.scrollWidth;
+    }
+  }, [display]);
 
   const inputNumber = (num: string) => {
     if (waitingForOperand || justEvaluated) {
@@ -133,7 +140,7 @@ const IphoneCalculator: React.FC = () => {
   const handleButtonClick = (btn: string) => {
     if (/^[0-9]$/.test(btn)) inputNumber(btn);
     else if (btn === ".") inputDot();
-    else if (["+", "-", "x", "/"].includes(btn)) performOperation(btn);
+    else if (["+", "-", "×", "÷"].includes(btn)) performOperation(btn === "×" ? "x" : btn === "÷" ? "/" : btn);
     else if (btn === "=") {
       if (expression) {
         const result = safeEval(expression);
@@ -146,9 +153,14 @@ const IphoneCalculator: React.FC = () => {
         setShowHistory(false);
         setTimeout(() => setShowHistory(true), 200); // animate history in
       }
-    } else if (btn === "AC") clearAll();
+    } else if (btn === "C") clearAll();
     else if (btn === "+/-") toggleSign();
     else if (btn === "%") inputPercent();
+    else if (btn === "⌫") {
+      setDisplay((prev) => prev.length > 1 ? prev.slice(0, -1) : "0");
+      setProcess((prev) => prev.length > 0 ? prev.slice(0, -1) : "");
+      setExpression((prev) => prev.length > 0 ? prev.slice(0, -1) : "");
+    }
   };
 
   if (mode === 'quadratic') {
@@ -177,22 +189,32 @@ const IphoneCalculator: React.FC = () => {
             <FaInfinity className="inline-block text-lg" />
             Quadratic
           </button>
-          <div className="text-xs text-gray-400 mb-1 text-right h-4 select-none">
-            {process.replace(/([+\-x/=])/g, ' $1 ').replace(/\s+/g, ' ').trim()}
+          <div
+            className="text-xs text-gray-400 mb-1 text-right h-auto min-h-4 select-none overflow-x-auto max-w-full whitespace-pre-line break-all leading-tight"
+            style={{ fontSize: process.length > 24 ? '0.65rem' : 'clamp(0.7rem, 2vw, 1rem)' }}
+          >
+            {process}
           </div>
-          <div className="text-4xl font-mono font-bold text-right text-white mb-6 h-12 transition-all duration-200 bg-black/40 rounded-lg px-3 py-2 shadow-inner">
-            {parseFloat(display).toLocaleString("en", { maximumFractionDigits: 8 })}
+          <div
+            ref={mainDisplayRef}
+            className="font-mono font-bold text-right text-white mb-6 bg-black/40 rounded-lg px-3 py-2 shadow-inner overflow-x-auto max-w-full whitespace-nowrap min-h-[3.5rem] flex items-end justify-end"
+            style={{ fontSize: 'clamp(1.2rem, 7vw, 2.5rem)' }}
+          >
+            {display}
           </div>
           <div className="grid grid-cols-4 gap-3">
             {buttons.map((row, i) =>
               row.map((btn, j) => (
                 <button
                   key={btn + i + j}
-                  className={`h-14 rounded-xl text-lg font-semibold shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400 ${getButtonClass(btn)} ${btn === "0" ? "col-span-2" : ""} ${btn === "=" ? "bg-gradient-to-r from-green-400 to-blue-500 text-white" : ""} ${btn === "AC" ? "bg-gradient-to-r from-red-400 to-pink-500 text-white" : ""} ${btn === "+/-" || btn === "%" ? "bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800" : ""} ${["/", "x", "-", "+"].includes(btn) ? "bg-gradient-to-r from-yellow-400 to-yellow-600 text-white" : "bg-white/80 text-gray-900"}`}
+                  className={`h-14 rounded-xl text-lg font-semibold shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400 ${getButtonClass(btn)}
+                    ${btn === '=' ? 'bg-gradient-to-r from-green-400 to-blue-500 text-white' : ''}
+                    ${btn === 'C' || btn === '⌫' ? 'bg-gradient-to-r from-red-400 to-pink-500 text-white' : ''}
+                    ${btn === '+/-' || btn === '%' ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800' : ''}
+                    ${['÷', '×', '-', '+'].includes(btn) ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white' : 'bg-white/80 text-gray-900'}`}
                   onClick={() => handleButtonClick(btn)}
-                  style={btn === "0" ? { gridColumn: "span 2" } : {}}
                 >
-                  {btn}
+                  {btn === '⌫' ? <FaBackspace className="inline-block text-xl" /> : btn}
                 </button>
               ))
             )}
@@ -200,14 +222,17 @@ const IphoneCalculator: React.FC = () => {
         </div>
         {/* History Sidebar - now responsive */}
         {history.length > 0 && (
-          <div className={`flex flex-col w-full max-w-xs md:w-56 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0 transition-all duration-500 ease-out ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 md:translate-x-8'}`}>
+          <div className={`flex flex-col w-full max-w-xs md:w-56 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0
+            transition-all duration-500 ease-out
+            ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}
+          `}>
             <div className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <FaHistory className="inline-block text-blue-200" />
               History
             </div>
             <ul className="space-y-2">
               {history.map((item, idx) => (
-                <li key={idx} className="text-white/90 text-sm bg-black/30 rounded px-2 py-1 text-center relative">
+                <li key={idx} className="text-white/90 text-sm bg-black/30 rounded px-2 py-1 text-left relative overflow-x-auto break-all whitespace-pre-line">
                   {idx === 0 && (
                     <div className="w-full flex justify-start">
                       <span className="inline-block mb-1 px-2 py-0.5 bg-blue-500 text-white text-[10px] rounded-full font-semibold shadow">Latest</span>
