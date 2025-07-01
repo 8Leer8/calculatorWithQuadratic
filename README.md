@@ -81,15 +81,6 @@ npm start
 
 Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 🖼️ Screenshots (Optional)
-
-Add images under a folder named `screenshots/` and reference them like:
-
-```
-![Basic Calculator](./screenshots/calculator.png)
-![Quadratic Solver](./screenshots/quadratic.png)
-```
-
 ## 🔧 Planned Features
 
 - Mobile responsiveness
