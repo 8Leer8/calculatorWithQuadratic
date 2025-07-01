@@ -25,7 +25,7 @@ A responsive and interactive calculator built using **React.js**. It supports bo
 | Frontend UI   | **React.js**       |
 | Styling       | **CSS**            |
 | Logic & State | **JavaScript + React Hooks** |
-| Graph Plotting| **Chart.js** (via npm) |
+| Graph Plotting| **Recharts** (via `recharts` package) |
 
 ## 📁 Project Structure
 
