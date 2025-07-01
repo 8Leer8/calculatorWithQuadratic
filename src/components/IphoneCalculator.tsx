@@ -193,7 +193,7 @@ const IphoneCalculator: React.FC = () => {
             className="text-xs text-gray-400 mb-1 text-right h-auto min-h-4 select-none overflow-x-auto max-w-full whitespace-pre-line break-all leading-tight"
             style={{ fontSize: process.length > 24 ? '0.65rem' : 'clamp(0.7rem, 2vw, 1rem)' }}
           >
-            {process}
+            {process.replace(/([+\-×÷=])/g, ' $1 ')}
           </div>
           <div
             ref={mainDisplayRef}

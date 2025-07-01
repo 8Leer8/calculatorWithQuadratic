@@ -8,11 +8,15 @@ const QuadraticCalculator: React.FC = () => {
   const [history, setHistory] = useState<string[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [signB, setSignB] = useState<'+' | '-'>('+');
+  const [signC, setSignC] = useState<'+' | '-'>('+');
 
   const solveQuadratic = () => {
     const a = parseFloat(coefficients.a);
-    const b = parseFloat(coefficients.b);
-    const c = parseFloat(coefficients.c);
+    let b = parseFloat(coefficients.b);
+    let c = parseFloat(coefficients.c);
+    if (signB === '-') b = -b;
+    if (signC === '-') c = -c;
     if (isNaN(a) || isNaN(b) || isNaN(c)) {
       setError('Please enter valid numbers for all coefficients');
       return;
@@ -38,7 +42,7 @@ const QuadraticCalculator: React.FC = () => {
     setResult({ x1, x2, discriminant });
     setError('');
     setHistory(prev => [
-      `${a}x² + ${b}x + ${c} = 0 → ${resultText} (D=${discriminant})`,
+      `${a}x² ${signB} ${Math.abs(parseFloat(coefficients.b))}x ${signC} ${Math.abs(parseFloat(coefficients.c))} = 0 → ${resultText} (D=${discriminant})`,
       ...prev
     ].slice(0, 10));
     setShowResult(false);
@@ -78,7 +82,7 @@ const QuadraticCalculator: React.FC = () => {
         <form className="flex flex-col gap-4 items-center" onSubmit={e => { e.preventDefault(); solveQuadratic(); }}>
           <div className="flex items-center gap-0 text-lg sm:text-2xl text-white font-mono flex-wrap justify-center">
             <input
-              className="w-10 text-center bg-transparent text-white border-0 focus:outline-none placeholder-gray-400 mx-0 appearance-none shadow-none"
+              className="w-8 text-center bg-transparent text-white border-0 focus:outline-none placeholder-gray-400 appearance-none shadow-none"
               placeholder="a"
               name="a"
               value={coefficients.a}
@@ -87,9 +91,18 @@ const QuadraticCalculator: React.FC = () => {
               required
               style={{ boxShadow: 'none' }}
             />
-            <span>x² +</span>
+            <span>x²</span>
+            <button
+              type="button"
+              className="mx-0.5 px-1 py-0.5 rounded text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onClick={() => setSignB(signB === '+' ? '-' : '+')}
+              tabIndex={0}
+              aria-label="Toggle sign for b"
+            >
+              {signB}
+            </button>
             <input
-              className="w-10 text-center bg-transparent text-white border-0 focus:outline-none placeholder-gray-400 mx-0 appearance-none shadow-none"
+              className="w-8 text-center bg-transparent text-white border-0 focus:outline-none placeholder-gray-400 appearance-none shadow-none"
               placeholder="b"
               name="b"
               value={coefficients.b}
@@ -98,9 +111,18 @@ const QuadraticCalculator: React.FC = () => {
               required
               style={{ boxShadow: 'none' }}
             />
-            <span>x +</span>
+            <span>x</span>
+            <button
+              type="button"
+              className="mx-0.5 px-1 py-0.5 rounded text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onClick={() => setSignC(signC === '+' ? '-' : '+')}
+              tabIndex={0}
+              aria-label="Toggle sign for c"
+            >
+              {signC}
+            </button>
             <input
-              className="w-10 text-center bg-transparent text-white border-0 focus:outline-none placeholder-gray-400 mx-0 appearance-none shadow-none"
+              className="w-8 text-center bg-transparent text-white border-0 focus:outline-none placeholder-gray-400 appearance-none shadow-none"
               placeholder="c"
               name="c"
               value={coefficients.c}
