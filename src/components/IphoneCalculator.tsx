@@ -26,9 +26,30 @@ const IphoneCalculator: React.FC = () => {
   const [process, setProcess] = useState<string>("");
   const [expression, setExpression] = useState<string>("");
   const [justEvaluated, setJustEvaluated] = useState(false);
-  const [history, setHistory] = useState<string[]>([]); // Add history state
+  const [history, setHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const mainDisplayRef = useRef<HTMLDivElement>(null);
+
+  // I load ang history from localstorage
+  useEffect(() => {
+    const saved = localStorage.getItem('iphone_history');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setHistory(parsed);
+        if (parsed.length > 0) setShowHistory(true);
+      } catch {}
+    }
+    setHistoryLoaded(true);
+  }, []);
+
+  // Save history sa localstorage if mag change pero sa initial load ra mo change
+  useEffect(() => {
+    if (historyLoaded) {
+      localStorage.setItem('iphone_history', JSON.stringify(history));
+    }
+  }, [history, historyLoaded]);
 
   useEffect(() => {
     if (mainDisplayRef.current) {
@@ -128,9 +149,6 @@ const IphoneCalculator: React.FC = () => {
     // Replace x with * for multiplication
     const sanitized = expr.replace(/x/g, '*');
     try {
-      // eslint-disable-next-line no-eval
-      // Use eval instead of Function constructor to avoid 'no-new-func' warning
-      // eslint-disable-next-line no-eval
       return eval(sanitized);
     } catch {
       return 'Error';
@@ -160,6 +178,25 @@ const IphoneCalculator: React.FC = () => {
       setDisplay((prev) => prev.length > 1 ? prev.slice(0, -1) : "0");
       setProcess((prev) => prev.length > 0 ? prev.slice(0, -1) : "");
       setExpression((prev) => prev.length > 0 ? prev.slice(0, -1) : "");
+    }
+  };
+
+  // Delete a history item
+  const deleteHistoryItem = (idx: number) => {
+    setHistory(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // Parse a history item and restore it to the calculator
+  const parseHistoryItem = (item: string) => {
+    const match = item.match(/(.+) = (.+)$/);
+    if (match) {
+      const expression = match[1].trim();
+      const result = match[2].trim();
+      setDisplay(result);
+      setProcess(expression + "=" + result);
+      setExpression(expression);
+      setWaitingForOperand(false);
+      setJustEvaluated(true);
     }
   };
 
@@ -220,7 +257,7 @@ const IphoneCalculator: React.FC = () => {
             )}
           </div>
         </div>
-        {/* History Sidebar - now responsive */}
+        {/* History Sidebar */}
         {history.length > 0 && (
           <div className={`flex flex-col w-full max-w-xs md:w-56 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0
             transition-all duration-500 ease-out
@@ -232,13 +269,31 @@ const IphoneCalculator: React.FC = () => {
             </div>
             <ul className="space-y-2">
               {history.map((item, idx) => (
-                <li key={idx} className="text-white/90 text-sm bg-black/30 rounded px-2 py-1 text-left relative overflow-x-auto break-all whitespace-pre-line">
+                <li
+                  key={idx}
+                  className="group text-white/90 text-sm bg-black/30 rounded px-2 py-1 text-left relative overflow-x-auto break-all whitespace-pre-line cursor-pointer hover:bg-blue-900/40 transition"
+                  onClick={e => {
+                    // Only restore if not clicking delete
+                    if ((e.target as HTMLElement).closest('.delete-btn')) return;
+                    parseHistoryItem(item);
+                  }}
+                  title="Click to restore this result"
+                >
                   {idx === 0 && (
                     <div className="w-full flex justify-start">
                       <span className="inline-block mb-1 px-2 py-0.5 bg-blue-500 text-white text-[10px] rounded-full font-semibold shadow">Latest</span>
                     </div>
                   )}
-                  <span>{item}</span>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="flex-1">{item}</span>
+                    <button
+                      className="delete-btn ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-600 text-base px-1"
+                      onClick={e => { e.stopPropagation(); deleteHistoryItem(idx); }}
+                      title="Delete this history item"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
