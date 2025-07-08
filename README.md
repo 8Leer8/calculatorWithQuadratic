@@ -80,10 +80,3 @@ npm start
 ```
 
 Then open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 🔧 Planned Features
-
-- Mobile responsiveness
-- Dark/light theme toggle
-- Input validation and error handling
-- Expand to cubic or polynomial solving
