@@ -766,10 +766,10 @@ const QuadraticCalculator: React.FC<QuadraticCalculatorProps> = ({ onStandardCal
         {/* Standard Calc Button inside card */}
         <div className="flex justify-start mb-2">
           <button
-            className="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold shadow hover:scale-105 transition-transform flex items-center gap-2"
+            className="px-2 py-1 rounded-lg bg-blue-500 text-white font-semibold shadow hover:scale-105 transition-transform flex items-center gap-2 text-sm"
             onClick={onStandardCalc}
           >
-            <FaCalculator className="inline-block text-lg" /> Standard Calc
+            <FaCalculator className="inline-block text-base" /> Standard Calc
           </button>
         </div>
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-white mb-2 flex items-center justify-center gap-2">
@@ -988,7 +988,7 @@ const QuadraticCalculator: React.FC<QuadraticCalculatorProps> = ({ onStandardCal
                       angle: -90,
                       position: 'insideLeft',
                       offset: 10,
-                      fill: themeColors.axisRed,
+                      fill: themeColors.line,
                       fontSize: 16,
                       fontWeight: 'bold'
                     }}
@@ -1030,7 +1030,7 @@ const QuadraticCalculator: React.FC<QuadraticCalculatorProps> = ({ onStandardCal
                       label={{
                         value: `Vertex (${vertexX.toFixed(2)}, ${(a * vertexX * vertexX + b * vertexX + c).toFixed(2)})`,
                         position: 'top',
-                        fill: themeColors.vertexStroke,
+                        fill: themeColors.symmetry,
                         fontSize: 12,
                         fontWeight: 'bold',
                         dy: -10
@@ -1090,7 +1090,7 @@ const QuadraticCalculator: React.FC<QuadraticCalculatorProps> = ({ onStandardCal
       </div>
       {/* History Sidebar */}
       {history.length > 0 && (
-        <div className={`flex flex-col w-full max-w-xs sm:max-w-sm md:w-80 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-4 sm:p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0 transition-all duration-500 ease-out ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 md:translate-x-8'}`}
+        <div className={`flex flex-col w-full max-w-xs sm:max-w-sm md:w-80 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-4 sm:p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0 transition-all duration-500 ease-out ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 md:translate-x-8'} mb-6`}
           style={{ maxHeight: '60vh' }}>
           <div className="text-lg font-bold text-white mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">

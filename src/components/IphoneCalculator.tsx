@@ -214,7 +214,7 @@ const IphoneCalculator: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 transition-all duration-700">
       <div className="flex flex-col md:flex-row gap-6 w-full max-w-2xl items-center md:items-stretch justify-center">
-        <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-xs border border-gray-200/20 mx-auto">
+        <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-xs border border-gray-200/20 mx-auto mt-8">
           <button
             className="mb-4 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold shadow hover:scale-105 transition-transform flex items-center gap-2"
             onClick={() => setMode('quadratic')}
@@ -230,7 +230,7 @@ const IphoneCalculator: React.FC = () => {
           </div>
           <div
             ref={mainDisplayRef}
-            className="font-mono font-bold text-right text-white mb-6 bg-black/40 rounded-lg px-3 py-2 shadow-inner overflow-x-auto max-w-full whitespace-nowrap min-h-[3.5rem] flex items-end justify-end"
+            className="font-mono font-bold text-right text-white mb-6 mt-4 bg-black/40 rounded-lg px-3 py-2 shadow-inner overflow-x-auto max-w-full whitespace-nowrap min-h-[3.5rem] flex items-end justify-end"
             style={{ fontSize: 'clamp(1.2rem, 7vw, 2.5rem)' }}
           >
             {display}
@@ -257,7 +257,7 @@ const IphoneCalculator: React.FC = () => {
         {history.length > 0 && (
           <div className={`flex flex-col w-full max-w-xs md:w-56 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0
             transition-all duration-500 ease-out
-            ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}
+            ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'} mb-6
           `}>
             <div className="text-lg font-bold text-white mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
