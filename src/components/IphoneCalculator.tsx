@@ -146,7 +146,6 @@ const IphoneCalculator: React.FC = () => {
   };
 
   const safeEval = (expr: string) => {
-    // Replace x with * for multiplication
     const sanitized = expr.replace(/x/g, '*');
     try {
       return eval(sanitized);
@@ -169,7 +168,7 @@ const IphoneCalculator: React.FC = () => {
         setJustEvaluated(true);
         setHistory(prev => [expression.replace(/([+\-x/=])/g, ' $1 ').replace(/\s+/g, ' ').trim() + ' = ' + result, ...prev].slice(0, 10));
         setShowHistory(false);
-        setTimeout(() => setShowHistory(true), 200); // animate history in
+        setTimeout(() => setShowHistory(true), 200);
       }
     } else if (btn === "C") clearAll();
     else if (btn === "+/-") toggleSign();
@@ -191,7 +190,6 @@ const IphoneCalculator: React.FC = () => {
     setHistory([]);
   };
 
-  // Parse a history item and restore it to the calculator
   const parseHistoryItem = (item: string) => {
     const match = item.match(/(.+) = (.+)$/);
     if (match) {
@@ -280,7 +278,6 @@ const IphoneCalculator: React.FC = () => {
                   key={idx}
                   className="group text-white/90 text-sm bg-black/30 rounded px-2 py-1 text-left relative overflow-x-auto break-all whitespace-pre-line cursor-pointer hover:bg-blue-900/40 transition"
                   onClick={e => {
-                    // Only restore if not clicking delete
                     if ((e.target as HTMLElement).closest('.delete-btn')) return;
                     parseHistoryItem(item);
                   }}

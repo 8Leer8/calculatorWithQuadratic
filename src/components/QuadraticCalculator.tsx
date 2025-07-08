@@ -603,7 +603,6 @@ const QuadraticCalculator: React.FC<QuadraticCalculatorProps> = ({ onStandardCal
       if (signC === '-') c = -c;
       if (!result) return;
 
-      // Colors
       const blue = '#1976d2';
       const gray = '#444';
       const lightGray = '#f5f5f5';
