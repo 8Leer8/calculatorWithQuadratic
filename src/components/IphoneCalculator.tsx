@@ -255,7 +255,7 @@ const IphoneCalculator: React.FC = () => {
         </div>
         {/* History Sidebar */}
         {history.length > 0 && (
-          <div className={`flex flex-col w-full max-w-xs md:w-56 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0
+          <div className={`flex flex-col w-full max-w-xs md:w-56 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-12
             transition-all duration-500 ease-out
             ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'} mb-6
           `}>
