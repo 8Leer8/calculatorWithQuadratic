@@ -988,7 +988,7 @@ const QuadraticCalculator: React.FC<QuadraticCalculatorProps> = ({ onStandardCal
                       angle: -90,
                       position: 'insideLeft',
                       offset: 10,
-                      fill: themeColors.line,
+                      fill: themeColors.axisRed,
                       fontSize: 16,
                       fontWeight: 'bold'
                     }}
@@ -1090,7 +1090,7 @@ const QuadraticCalculator: React.FC<QuadraticCalculatorProps> = ({ onStandardCal
       </div>
       {/* History Sidebar */}
       {history.length > 0 && (
-        <div className={`flex flex-col w-full max-w-xs sm:max-w-sm md:w-80 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-4 sm:p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0 transition-all duration-500 ease-out ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 md:translate-x-8'} mb-6`}
+        <div className={`flex flex-col w-full max-w-xs sm:max-w-sm md:w-80 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-4 sm:p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0 transition-all duration-500 ease-out ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 md:translate-x-8'}`}
           style={{ maxHeight: '60vh' }}>
           <div className="text-lg font-bold text-white mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
