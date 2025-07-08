@@ -1,8 +1,65 @@
 import React, { useState } from 'react';
-import { FaCheckCircle, FaInfoCircle, FaHistory, FaTimes } from 'react-icons/fa';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { FaCheckCircle, FaInfoCircle, FaHistory, FaTimes, FaPalette, FaTrash, FaCalculator, FaFileExport } from 'react-icons/fa';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
-const QuadraticCalculator: React.FC = () => {
+const themeOptions = [
+  {
+    name: 'Classic',
+    key: 'classic',
+    colors: {
+      axisBlue: '#6366f1',
+      axisRed: '#f43f5e',
+      gridColor: '#64748b',
+      tickColor: '#cbd5e1',
+      line: '#6366f1',
+      vertex: '#f59e42',
+      vertexStroke: '#b45309',
+      root: '#22d3ee',
+      rootStroke: '#0e7490',
+      symmetry: '#f59e42',
+    }
+  },
+  {
+    name: 'Neon',
+    key: 'neon',
+    colors: {
+      axisBlue: '#00fff7',
+      axisRed: '#ff00c8',
+      gridColor: '#00ffb3',
+      tickColor: '#fff',
+      line: '#00fff7',
+      vertex: '#fffb00',
+      vertexStroke: '#ff00c8',
+      root: '#ff00c8',
+      rootStroke: '#00fff7',
+      symmetry: '#fffb00',
+    }
+  },
+  {
+    name: 'Pastel',
+    key: 'pastel',
+    colors: {
+      axisBlue: '#a5b4fc',
+      axisRed: '#fca5a5',
+      gridColor: '#fcd34d',
+      tickColor: '#f9fafb',
+      line: '#a5b4fc',
+      vertex: '#fcd34d',
+      vertexStroke: '#fbbf24',
+      root: '#fca5a5',
+      rootStroke: '#fbbf24',
+      symmetry: '#fcd34d',
+    }
+  }
+];
+
+interface QuadraticCalculatorProps {
+  onStandardCalc?: () => void;
+}
+
+const QuadraticCalculator: React.FC<QuadraticCalculatorProps> = ({ onStandardCalc }) => {
   const [coefficients, setCoefficients] = useState({ a: '', b: '', c: '' });
   const [result, setResult] = useState<{ x1: number | null; x2: number | null; discriminant: number } | null>(null);
   const [error, setError] = useState<string>('');
@@ -15,6 +72,9 @@ const QuadraticCalculator: React.FC = () => {
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [showSolutionModal, setShowSolutionModal] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [theme, setTheme] = useState('classic');
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const themeColors = themeOptions.find(t => t.key === theme)?.colors || themeOptions[0].colors;
 
   // Live update 
   React.useEffect(() => {
@@ -79,6 +139,10 @@ const QuadraticCalculator: React.FC = () => {
 
   function deleteHistoryItem(idx: number) {
     setHistory(prev => prev.filter((_, i) => i !== idx));
+  }
+
+  function deleteAllHistory() {
+    setHistory([]);
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,10 +248,6 @@ const QuadraticCalculator: React.FC = () => {
   for (let y = yDomain[0]; y <= yDomain[1]; y += yStep) {
     yTicks.push(y);
   }
-  const axisBlue = '#6366f1'; 
-  const axisRed = '#f43f5e'; 
-  const gridColor = '#64748b'; 
-  const tickColor = '#cbd5e1'; 
 
   // parse history
   function parseHistoryItem(item: string) {
@@ -533,13 +593,186 @@ const QuadraticCalculator: React.FC = () => {
     return steps;
   };
 
+  const handleExportSummaryPDF = () => {
+    try {
+      const doc = new jsPDF();
+      const a = parseFloat(coefficients.a);
+      let b = parseFloat(coefficients.b);
+      let c = parseFloat(coefficients.c);
+      if (signB === '-') b = -b;
+      if (signC === '-') c = -c;
+      if (!result) return;
+
+      // Colors
+      const blue = '#1976d2';
+      const gray = '#444';
+      const lightGray = '#f5f5f5';
+
+      // Title
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(20);
+      doc.setTextColor(blue);
+      doc.text('Quadratic Equation Result Summary', 105, 22, { align: 'center' });
+      // Horizontal line
+      doc.setDrawColor(blue);
+      doc.setLineWidth(1.2);
+      doc.line(30, 26, 180, 26);
+
+      // Background box for summary
+      doc.setFillColor(lightGray);
+      doc.roundedRect(15, 32, 180, 80, 4, 4, 'F');
+
+      let y = 40;
+      doc.setFontSize(13);
+      doc.setTextColor(gray);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Equation:', 22, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor('#000');
+      doc.text(`${a}x² ${b >= 0 ? '+' : ''}${b}x ${c >= 0 ? '+' : ''}${c} = 0`, 60, y);
+      y += 10;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(gray);
+      doc.text('Discriminant:', 22, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor('#000');
+      doc.text(`${result.discriminant}`, 60, y);
+      y += 10;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(gray);
+      doc.text('Roots:', 22, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor('#000');
+      if (result.discriminant > 0) {
+        doc.text(`x₁ = ${result.x1?.toFixed(4)}, x₂ = ${result.x2?.toFixed(4)}`, 60, y);
+      } else if (result.discriminant === 0) {
+        doc.text(`x = ${result.x1?.toFixed(4)}`, 60, y);
+      } else {
+        const real = (-b / (2 * a)).toFixed(4);
+        const imag = (Math.sqrt(-result.discriminant) / (2 * a)).toFixed(4);
+        doc.text(`x = ${real} ± ${imag}i`, 60, y);
+      }
+      y += 10;
+
+      const vertexX = -b / (2 * a);
+      const vertexY = a * vertexX * vertexX + b * vertexX + c;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(gray);
+      doc.text('Vertex:', 22, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor('#000');
+      doc.text(`(${vertexX.toFixed(4)}, ${vertexY.toFixed(4)})`, 60, y);
+      y += 10;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(gray);
+      doc.text('Sum of Roots:', 22, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor('#000');
+      doc.text(`${(-b / a).toFixed(4)}`, 60, y);
+      y += 10;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(gray);
+      doc.text('Product of Roots:', 22, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor('#000');
+      doc.text(`${(c / a).toFixed(4)}`, 60, y);
+      y += 18;
+
+      // Footer
+      doc.setDrawColor(blue);
+      doc.setLineWidth(0.5);
+      doc.line(30, 125, 180, 125);
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(11);
+      doc.setTextColor(gray);
+      doc.text('Generated from Quadratic Equation Calculator', 105, 132, { align: 'center' });
+
+      doc.save('quadratic-result-summary.pdf');
+    } catch (e) {
+      alert('Failed to export summary PDF.');
+    }
+  };
+
+  const handleExportGraphPNG = async () => {
+    try {
+      const graphElem = document.getElementById('quadratic-graph-area');
+      if (!graphElem) throw new Error('Graph not found');
+      const canvas = await html2canvas(graphElem, { backgroundColor: null });
+      const link = document.createElement('a');
+      link.download = 'quadratic-graph.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (e) {
+      alert('Failed to export graph as PNG.');
+    }
+  };
+
+  const handleExportStepPDF = () => {
+    try {
+      const doc = new jsPDF();
+      const steps = getStepByStepSolution();
+      if (!steps) return;
+      let y = 15;
+      doc.setFontSize(16);
+      doc.text('Step-by-Step Solution', 10, y);
+      y += 10;
+      doc.setFontSize(12);
+      steps.forEach((step, idx) => {
+        if (y > 270) { doc.addPage(); y = 15; }
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${step.title}`, 10, y);
+        y += 7;
+        doc.setFont('helvetica', 'normal');
+        doc.text(step.content, 12, y);
+        y += 7;
+        step.details.forEach(detail => {
+          if (y > 280) { doc.addPage(); y = 15; }
+          doc.text(`- ${detail}`, 14, y);
+          y += 6;
+        });
+        y += 4;
+      });
+      doc.save('quadratic-step-by-step.pdf');
+    } catch (e) {
+      alert('Failed to export step-by-step PDF.');
+    }
+  };
+
   return (
     <div className={
       `w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto flex flex-col md:flex-row gap-6 items-center md:items-stretch px-2 sm:px-4 md:px-8 pt-8 sm:pt-16 md:pt-24` +
       (history.length > 0 ? '' : '')
     }>
-      <div className="w-full max-w-xs sm:max-w-md md:max-w-lg bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-2 sm:p-4 md:p-8 border border-gray-200/20 mx-auto overflow-y-auto max-h-[80vh] min-h-[340px] flex flex-col justify-center"
-        style={{ maxHeight: '80vh' }}>
+      {/* Theme Selector */}
+      <div className="static md:absolute md:right-4 md:top-4 flex items-center gap-2 z-10 mb-2 md:mb-0">
+        <FaPalette className="text-xl text-white" />
+        <label htmlFor="graph-theme" className="text-white font-semibold text-sm">Graph Theme:</label>
+        <select
+          id="graph-theme"
+          className="rounded-lg px-2 py-1 bg-white text-gray-900 font-semibold focus:outline-none"
+          value={theme}
+          onChange={e => setTheme(e.target.value)}
+        >
+          {themeOptions.map(opt => (
+            <option key={opt.key} value={opt.key}>{opt.name}</option>
+          ))}
+        </select>
+      </div>
+      <div className="w-full max-w-xs sm:max-w-md md:max-w-lg bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-2 sm:p-4 md:p-8 border border-gray-200/20 mx-auto overflow-y-auto max-h-[98vh] flex flex-col pb-8 mb-12"
+        style={{ maxHeight: '98vh' }}>
+        {/* Standard Calc Button inside card */}
+        <div className="flex justify-start mb-2">
+          <button
+            className="px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold shadow hover:scale-105 transition-transform flex items-center gap-2"
+            onClick={onStandardCalc}
+          >
+            <FaCalculator className="inline-block text-lg" /> Standard Calc
+          </button>
+        </div>
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-white mb-2 flex items-center justify-center gap-2">
           <span>Quadratic Equation Solver</span>
         </h2>
@@ -628,12 +861,63 @@ const QuadraticCalculator: React.FC = () => {
         </form>
         {error && <div className="text-red-400 text-center mt-2">{error}</div>}
         {result && (
-          <div className={`mt-4 text-center transition-all duration-500 ease-out ${showResult ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'} `}>
-            <div className="text-lg text-white font-semibold mb-1 flex items-center justify-center gap-2">
-              <FaInfoCircle className="inline-block text-blue-200" />
-              Result
+          <div className={`mt-4 text-center transition-all duration-500 ease-out ${showResult ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'} relative`}>
+            {/* Export Dropdown on the right, Result label centered */}
+            <div className="flex items-center justify-center mb-1 relative">
+              <div className="text-lg text-white font-semibold flex items-center gap-2 mx-auto">
+                <FaInfoCircle className="inline-block text-blue-200" />
+                Result
+              </div>
+              <div className="absolute right-0 top-0">
+                <div className="relative inline-block text-left">
+                  <button
+                    className="flex items-center gap-1 px-2 py-1 bg-green-600 text-white rounded-md font-semibold shadow hover:bg-green-700 focus:outline-none text-xs"
+                    style={{ fontSize: '0.85rem' }}
+                    onClick={() => setShowExportDropdown(v => !v)}
+                    type="button"
+                  >
+                    <FaFileExport className="inline-block text-base" /> Export
+                  </button>
+                  {showExportDropdown && (
+                    <div className="origin-top-right absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20">
+                      <div className="py-1">
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => { setShowExportDropdown(false); handleExportSummaryPDF(); }}
+                        >
+                          Export Result Summary as PDF
+                        </button>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => { setShowExportDropdown(false); handleExportGraphPNG(); }}
+                        >
+                          Export Graph as PNG
+                        </button>
+                        <button
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => { setShowExportDropdown(false); handleExportStepPDF(); }}
+                        >
+                          Export Step-by-Step Solution as PDF
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="text-gray-200">{getResultText()}</div>
+            {/* End Export Dropdown and Result label */}
+            {/* Complex roots note and highlight */}
+            {result.discriminant < 0 && (
+              <div className="flex flex-col items-center mb-2">
+                <div className="flex items-center gap-2 text-blue-400 text-sm font-semibold">
+                  <FaInfoCircle className="inline-block" />
+                  No real solutions — complex roots shown below
+                </div>
+              </div>
+            )}
+            <div className={`text-gray-200 ${result.discriminant < 0 ? 'bg-blue-900/40 border border-blue-400 rounded-lg p-2' : ''}`} id="quadratic-result-summary">
+              {getResultText()}
+            </div>
             <div className="text-xs text-gray-400 mt-1">Discriminant: {result.discriminant}</div>
             {/* Quadratic Graph */}
             {/* Zoom Slider */}
@@ -651,17 +935,30 @@ const QuadraticCalculator: React.FC = () => {
               />
               <span className="text-xs text-gray-300">{zoom}x</span>
             </div>
-            <div className="w-full h-64 bg-white/5 rounded-xl p-2">
+            <div className="w-full h-72 bg-white/5 rounded-xl box-border overflow-hidden" id="quadratic-graph-area">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={graphData}
-                  margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                  margin={{ top: 48, right: 20, left: 20, bottom: 40 }}
                 >
-                  <CartesianGrid stroke={gridColor} strokeDasharray="3 3" />
+                  <CartesianGrid stroke={themeColors.gridColor} strokeDasharray="3 3" />
                   {/* X axis */}
-                  <ReferenceLine y={0} stroke={axisBlue} strokeWidth={2} />
+                  <ReferenceLine y={0} stroke={themeColors.axisBlue} strokeWidth={2} />
                   {/* Y axis */}
-                  <ReferenceLine x={0} stroke={axisRed} strokeWidth={2} />
+                  <ReferenceLine x={0} stroke={themeColors.axisRed} strokeWidth={2} />
+                  {/* Axis of Symmetry */}
+                  {isFinite(vertexX) && (
+                    <ReferenceLine x={vertexX} stroke={themeColors.symmetry} strokeDasharray="6 3" strokeWidth={2}
+                      label={{
+                        value: `Axis of Symmetry (x = ${vertexX.toFixed(2)})`,
+                        position: 'top',
+                        fill: themeColors.symmetry,
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        dy: -10
+                      }}
+                    />
+                  )}
                   <XAxis
                     dataKey="x"
                     type="number"
@@ -669,26 +966,51 @@ const QuadraticCalculator: React.FC = () => {
                     ticks={xTicks}
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: axisBlue, fontSize: 16 }}
+                    tick={{ fill: themeColors.axisBlue, fontSize: 16 }}
                     interval={0}
+                    label={{
+                      value: 'x',
+                      position: 'insideBottom',
+                      offset: -25,
+                      fill: themeColors.axisBlue,
+                      fontSize: 16,
+                      fontWeight: 'bold'
+                    }}
                   />
                   <YAxis
                     domain={yDomain}
                     ticks={yTicks}
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: axisRed, fontSize: 16 }}
+                    tick={{ fill: themeColors.axisRed, fontSize: 16 }}
                     interval={0}
+                    label={{
+                      value: 'f(x)',
+                      angle: -90,
+                      position: 'insideLeft',
+                      offset: 10,
+                      fill: themeColors.axisRed,
+                      fontSize: 16,
+                      fontWeight: 'bold'
+                    }}
                   />
                   <Tooltip
-                    contentStyle={{ background: '#1e293b', border: 'none', color: '#fff' }}
-                    labelStyle={{ color: '#fff' }}
-                    formatter={(value, name) => [value, name === 'y' ? 'y' : name]}
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div style={{ background: '#1e293b', border: 'none', color: '#fff', borderRadius: 8, padding: 12 }}>
+                            <div style={{ color: themeColors.axisBlue, fontWeight: 'bold', fontSize: 18 }}>x = {label}</div>
+                            <div style={{ color: themeColors.axisRed, fontWeight: 'bold', fontSize: 18 }}>f(x) : {payload[0].value}</div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
                   />
                   <Line
                     type="monotone"
                     dataKey="y"
-                    stroke={axisBlue}
+                    stroke={themeColors.line}
                     strokeWidth={2}
                     dot={false}
                     isAnimationActive={true}
@@ -696,6 +1018,63 @@ const QuadraticCalculator: React.FC = () => {
                     animationEasing="ease"
                     key={`line-${coefficients.a}-${signB}${coefficients.b}-${signC}${coefficients.c}-${zoom}`}
                   />
+                  {/* Roots and Vertex on Graph */}
+                  {/* Vertex */}
+                  {isFinite(vertexX) && isFinite(a * vertexX * vertexX + b * vertexX + c) && (
+                    <ReferenceDot
+                      x={vertexX}
+                      y={a * vertexX * vertexX + b * vertexX + c}
+                      r={6}
+                      fill={themeColors.vertex}
+                      stroke={themeColors.vertexStroke}
+                      strokeWidth={2}
+                      label={{
+                        value: `Vertex (${vertexX.toFixed(2)}, ${(a * vertexX * vertexX + b * vertexX + c).toFixed(2)})`,
+                        position: 'top',
+                        fill: themeColors.vertexStroke,
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        dy: -10
+                      }}
+                    />
+                  )}
+                  {/* Roots (if real) */}
+                  {result && result.discriminant >= 0 && result.x1 !== null && (
+                    <ReferenceDot
+                      x={result.x1}
+                      y={0}
+                      r={5}
+                      fill={themeColors.root}
+                      stroke={themeColors.rootStroke}
+                      strokeWidth={2}
+                      label={{
+                        value: `x₁ = ${result.x1.toFixed(2)}`,
+                        position: 'bottom',
+                        fill: themeColors.rootStroke,
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        dy: 10
+                      }}
+                    />
+                  )}
+                  {result && result.discriminant > 0 && result.x2 !== null && (
+                    <ReferenceDot
+                      x={result.x2}
+                      y={0}
+                      r={5}
+                      fill={themeColors.root}
+                      stroke={themeColors.rootStroke}
+                      strokeWidth={2}
+                      label={{
+                        value: `x₂ = ${result.x2.toFixed(2)}`,
+                        position: 'bottom',
+                        fill: themeColors.rootStroke,
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                        dy: 10
+                      }}
+                    />
+                  )}
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -714,10 +1093,19 @@ const QuadraticCalculator: React.FC = () => {
       {history.length > 0 && (
         <div className={`flex flex-col w-full max-w-xs sm:max-w-sm md:w-80 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-4 sm:p-6 border border-gray-200/20 h-full max-h-[32rem] overflow-y-auto mt-4 md:mt-0 transition-all duration-500 ease-out ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 md:translate-x-8'}`}
           style={{ maxHeight: '60vh' }}>
-          <div className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <div className="text-lg font-bold text-white mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <FaHistory className="inline-block text-blue-200" />
             History
           </div>
+          <button
+            onClick={deleteAllHistory}
+            className="text-red-400 hover:text-red-600 transition-colors p-1 rounded-lg hover:bg-red-500/20"
+            title="Delete all history"
+          >
+            <FaTrash className="text-lg" />
+          </button>
+        </div>
           <ul className="space-y-2">
             {history.map((item, idx) => (
               <li
@@ -764,7 +1152,7 @@ const QuadraticCalculator: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="p-4 sm:p-6">
+            <div className="p-4 sm:p-6" id="quadratic-step-solution-area">
               {getStepByStepSolution()?.map((step, index) => (
                 <div key={index} className="mb-6 last:mb-0">
                   <h4 className="text-base sm:text-lg font-semibold text-blue-600 mb-2">{step.title}</h4>

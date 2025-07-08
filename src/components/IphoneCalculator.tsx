@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../index.css";
 import QuadraticCalculator from "./QuadraticCalculator";
-import { FaCalculator, FaInfinity, FaHistory, FaBackspace } from 'react-icons/fa';
+import { FaCalculator, FaInfinity, FaHistory, FaBackspace, FaTrash } from 'react-icons/fa';
 
 // Button layout for iPhone calculator
 const buttons = [
@@ -186,6 +186,11 @@ const IphoneCalculator: React.FC = () => {
     setHistory(prev => prev.filter((_, i) => i !== idx));
   };
 
+  // Delete all history
+  const deleteAllHistory = () => {
+    setHistory([]);
+  };
+
   // Parse a history item and restore it to the calculator
   const parseHistoryItem = (item: string) => {
     const match = item.match(/(.+) = (.+)$/);
@@ -203,14 +208,7 @@ const IphoneCalculator: React.FC = () => {
   if (mode === 'quadratic') {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 transition-all duration-700">
-        <button
-          className="absolute top-6 left-6 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold shadow hover:scale-105 transition-transform z-10 flex items-center gap-2"
-          onClick={() => setMode('standard')}
-        >
-          <FaCalculator className="inline-block text-lg" />
-          Standard Calc
-        </button>
-        <QuadraticCalculator />
+        <QuadraticCalculator onStandardCalc={() => setMode('standard')} />
       </div>
     );
   }
@@ -263,9 +261,18 @@ const IphoneCalculator: React.FC = () => {
             transition-all duration-500 ease-out
             ${showHistory ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}
           `}>
-            <div className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <FaHistory className="inline-block text-blue-200" />
-              History
+            <div className="text-lg font-bold text-white mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FaHistory className="inline-block text-blue-200" />
+                History
+              </div>
+              <button
+                onClick={deleteAllHistory}
+                className="text-red-400 hover:text-red-600 transition-colors p-1 rounded-lg hover:bg-red-500/20"
+                title="Delete all history"
+              >
+                <FaTrash className="text-lg" />
+              </button>
             </div>
             <ul className="space-y-2">
               {history.map((item, idx) => (
